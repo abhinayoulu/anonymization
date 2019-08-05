@@ -33,7 +33,6 @@ for c in ['Compound','Neutral','Negative','Positive']:
     data2 = df[c+'_y']
     print("Information loss in column: ", c, measure_entropy(data1, data2))
 
-'''
 locations = df.Locations_x.unique()
 for L in locations:
     print('--------------------------------')
@@ -54,4 +53,3 @@ for L in locations:
     print("Information loss in column Positive in location: ", L, measure_entropy(pos_x.values, pos_y.values))
     print("Information loss in column Negative in location: ", L, measure_entropy(neg_x.values, neg_y.values))
     print("Information loss in column Neutral in location: ", L, measure_entropy(neu_x.values, neu_y.values))
-''' 

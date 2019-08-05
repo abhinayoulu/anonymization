@@ -14,7 +14,7 @@ import statsmodels.api as sm
 class KDE(cp.Dist):
     def __init__(self, data):
         self.data = data
-        self.kdes = [sm.nonparametric.KDEMultivariate( data=data[:, :1], var_type="c", bw="cv_ml")] + [ sm.nonparametric.KDEMultivariateConditional(endog=[data[:, 1]], exog=list(data[:, :1].T), dep_type='c', indep_type='c'*1, bw='cv_ml')] + [ sm.nonparametric.KDEMultivariateConditional( endog=[data[:, 2]], exog=list(data[:, :2].T), dep_type='c', indep_type='c'*2, bw='cv_ml') ] + [ sm.nonparametric.KDEMultivariateConditional( endog=[data[:, 3]], exog=list(data[:, :3].T), dep_type='c', indep_type='c'*3, bw='cv_ml') ] + [ sm.nonparametric.KDEMultivariateConditional( endog=[data[:, 4]], exog=list(data[:, :4].T), dep_type='u', indep_type='c'*4, bw='cv_ml') ]
+        self.kdes = [sm.nonparametric.KDEMultivariate( data=data[:, :1], var_type="u", bw="cv_ml")] + [ sm.nonparametric.KDEMultivariateConditional(endog=[data[:, 1]], exog=list(data[:, :1].T), dep_type='c', indep_type='u', bw='cv_ml')] + [ sm.nonparametric.KDEMultivariateConditional( endog=[data[:, 2]], exog=list(data[:, :2].T), dep_type='c', indep_type='uc', bw='cv_ml') ] + [ sm.nonparametric.KDEMultivariateConditional( endog=[data[:, 3]], exog=list(data[:, :3].T), dep_type='c', indep_type='ucc', bw='cv_ml') ] + [ sm.nonparametric.KDEMultivariateConditional( endog=[data[:, 4]], exog=list(data[:, :4].T), dep_type='c', indep_type='uccc', bw='cv_ml') ]
         cp.Dist.__init__(self)
     
     def _cdf(self, q):
@@ -58,7 +58,7 @@ neg = df['Negative']
 neu = df['Neutral']
 loc = df['Locations']
 
-D = np.vstack((comp, pos, neg, neu, loc)).T
+D = np.vstack((loc, comp, pos, neg, neu)).T
 print(D)
 cp_kde = KDE(D)
 
@@ -66,9 +66,9 @@ np.set_printoptions(precision=3)
 np.set_printoptions(suppress=True)
 
 samples = cp.Iid(cp.Uniform(), 5).sample(len(df))
-R = cp.approximation.approximate_inverse(cp_kde, samples, iterations=100, tol=1e-5)
+R = cp.approximation.approximate_inverse(cp_kde, samples, iterations=1000, tol=1e-5)
 
-cols = ["Compound", "Negative" ,"Neutral", "Positive", "Locations"]
+cols = ["Locations", "Compound", "Negative" ,"Neutral", "Positive"]
 df1 = pd.DataFrame(R.T, columns=cols)
 df1['Compound'] = df1['Compound'].round(3)
 df1['Positive'] = df1['Positive'].round(3)
@@ -81,5 +81,6 @@ df1['Locations']=df1['Locations'].map(dic).fillna('EARTH')
 
 df2 = df.drop(['Compound', 'Negative', 'Neutral', 'Positive', 'Locations'],axis=1)
 newdf = pd.concat([df1,df2], axis = 1)
-newdf.to_csv('tweets_twins.csv',index=False)
+newdf = newdf[['Compound', 'Negative', 'Neutral', 'Positive', 'Timestamp','Locations','Uuid']]
+newdf.to_csv('tweets_twins.csv',index=False,sep='\t')
 
